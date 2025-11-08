@@ -13,4 +13,4 @@ class File(Base):
     filename = Column(String(255), nullable=False)
     url = Column(String(512), nullable=False)
     size = Column(Integer, nullable=False)
-    upload_timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    upload_timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), nullable=False)

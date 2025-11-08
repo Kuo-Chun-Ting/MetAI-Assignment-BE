@@ -1,15 +1,17 @@
 import asyncio
+from urllib.parse import quote_plus
 
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from config import get_database_url
+from config import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 from src.repository.model.base import Base
 from src.repository.model.file import File
 from src.repository.model.user import User
 
 
 async def run_migration():
-    engine = create_async_engine(get_database_url())
+    database_url = f"postgresql+asyncpg://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    engine = create_async_engine(database_url)
 
     async with engine.begin() as conn:
         print("Dropping all existing tables...")
