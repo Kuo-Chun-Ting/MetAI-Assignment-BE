@@ -1,6 +1,9 @@
 # Project-specific
 CLAUDE.md
 Todo.md
+Pipfile
+Pipfile.lock
+assignment_requirements.md
 
 # Environment files
 .env
