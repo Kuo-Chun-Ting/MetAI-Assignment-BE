@@ -6,8 +6,9 @@ DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "changeme")
+JWT_ALGORITHM = "HS256"
 
 
 def get_database_url() -> str:
-    encoded_password = quote_plus(DB_PASSWORD)
-    return f"postgresql://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    return f"postgresql+asyncpg://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
