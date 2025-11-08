@@ -2,8 +2,6 @@ from sqlalchemy import create_engine
 
 from config import get_database_url
 from src.repository.model.base import Base
-from src.repository.model.file import File
-from src.repository.model.user import User
 
 
 if __name__ == "__main__":

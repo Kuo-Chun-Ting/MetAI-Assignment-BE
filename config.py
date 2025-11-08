@@ -1,10 +1,11 @@
+import os
 from urllib.parse import quote_plus
 
-DB_HOST = "aws-1-ap-southeast-2.pooler.supabase.com"
-DB_PORT = "5432"
-DB_NAME = "postgres"
-DB_USER = "postgres.cqikyhluoceusmmdokwf"
-DB_PASSWORD = "1qaz@WSX3edc$RFV"
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 
 def get_database_url() -> str:
