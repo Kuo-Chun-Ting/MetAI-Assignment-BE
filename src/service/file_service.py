@@ -1,6 +1,6 @@
 import uuid
 
-from config import MAX_FILE_SIZE_MB
+from src.config import MAX_FILE_SIZE_MB
 from src.repository.file_repository import FileRepository
 from src.repository.model.file import File
 from src.service.supabase_storage_service import SupabaseStorageService

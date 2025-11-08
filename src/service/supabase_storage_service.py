@@ -1,7 +1,7 @@
 from storage3 import AsyncStorageClient
 from storage3.types import FileOptions
 
-from config import SUPABASE_ANON_KEY, SUPABASE_STORAGE_BUCKET, SUPABASE_URL
+from src.config import SUPABASE_ANON_KEY, SUPABASE_STORAGE_BUCKET, SUPABASE_URL
 
 
 class SupabaseStorageService:
@@ -22,3 +22,9 @@ class SupabaseStorageService:
 
     async def delete_file(self, file_path: str) -> None:
         await self.client.from_(self.bucket).remove([file_path])
+
+    async def clear_bucket(self) -> None:
+        files = await self.client.from_(self.bucket).list()
+        if files:
+            file_paths = [f["name"] for f in files]
+            await self.client.from_(self.bucket).remove(file_paths)

@@ -3,7 +3,7 @@ import secrets
 
 import jwt
 
-from config import JWT_ALGORITHM, JWT_SECRET_KEY
+from src.config import JWT_ALGORITHM, JWT_SECRET_KEY
 from src.repository.model.user import User
 from src.repository.user_repository import UserRepository
 
