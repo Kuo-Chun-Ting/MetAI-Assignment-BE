@@ -10,7 +10,15 @@
    ```bash
    pip install -r requirements.txt
    ```
-3. **Environment variables**
+3. **Supabase setup**
+   - Create a Supabase project.
+   - Database: make sure to find the **Session Pooler** connection info and use those values in the environment variables below.
+   - Storage:
+     1. Create a bucket named `files`.
+     2. Set the bucket to **public**.
+     3. Enable the default “Allow all operations” policies.
+     4. Edit each policy and set Definition to `true` so the anon key can read/write.
+4. **Environment variables**
    - Create `.env` with (please use your own Supabase/Postgres project):
      ```
      DB_HOST=<your_postgres_host>
@@ -22,16 +30,15 @@
      SUPABASE_URL=<your_supabase_project_url>
      SUPABASE_ANON_KEY=<your_supabase_anon_key>
      ```
-   - Supabase storage bucket name is hard-coded as `files`; please create that bucket in your project.
-4. **Load config**
+5. **Load config**
    ```bash
    set -a && source .env && set +a
    ```
-5. **Init database**
+6. **Init database**
    ```bash
    python init_database.py   # run at least once; re-run when you need a clean DB/storage
    ```
-6. **Run**
+7. **Run**
    ```bash
    uvicorn src.app:app --reload
    ```
