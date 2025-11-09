@@ -31,7 +31,7 @@ async def get_files(
     current_user: User = Depends(get_current_user),
     service: FileService = Depends(get_file_service),
 ) -> FileListResponse:
-    file_list, total_count = await service.get_files(limit, offset, sort_by, order)
+    file_list, total_count = await service.get_files(current_user.id, limit, offset, sort_by, order)
     return FileListResponse(
         file_list=[FileResponse.model_validate(f) for f in file_list],
         total=total_count,
@@ -46,7 +46,7 @@ async def get_file(
     current_user: User = Depends(get_current_user),
     service: FileService = Depends(get_file_service),
 ) -> FileResponse:
-    file = await service.get_file(file_id)
+    file = await service.get_file(current_user.id, file_id)
     if not file:
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse.model_validate(file)
@@ -58,7 +58,7 @@ async def download_file(
     current_user: User = Depends(get_current_user),
     service: FileService = Depends(get_file_service),
 ):
-    result = await service.download_file(file_id)
+    result = await service.download_file(current_user.id, file_id)
     if not result:
         raise HTTPException(status_code=404, detail="File not found")
 
@@ -77,7 +77,7 @@ async def update_filename(
     current_user: User = Depends(get_current_user),
     service: FileService = Depends(get_file_service),
 ) -> FileResponse:
-    file = await service.update_filename(file_id, request.filename)
+    file = await service.update_filename(current_user.id, file_id, request.filename)
     if not file:
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse.model_validate(file)
@@ -89,7 +89,7 @@ async def delete_file(
     current_user: User = Depends(get_current_user),
     service: FileService = Depends(get_file_service),
 ):
-    success = await service.delete_file(file_id)
+    success = await service.delete_file(current_user.id, file_id)
     if not success:
         raise HTTPException(status_code=404, detail="File not found")
     return {"message": "File deleted successfully"}

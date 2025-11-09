@@ -22,18 +22,23 @@ class FileService:
         url = await self.storage_service.upload_file(unique_filename, file_data)
         return await self.file_repo.create_file(user_id, filename, url, file_size)
 
-    async def get_file(self, file_id: int) -> File | None:
-        return await self.file_repo.get_file_by_id(file_id)
+    async def get_file(self, user_id: int, file_id: int) -> File | None:
+        return await self.file_repo.get_file_by_id(file_id, user_id)
 
     async def get_files(
-        self, limit: int = 10, offset: int = 0, sort_by: str = "upload_timestamp", order: str = "desc"
+        self,
+        user_id: int,
+        limit: int = 10,
+        offset: int = 0,
+        sort_by: str = "upload_timestamp",
+        order: str = "desc",
     ) -> tuple[list[File], int]:
-        file_list = await self.file_repo.get_files(limit, offset, sort_by, order)
-        total_count = await self.file_repo.get_files_count()
+        file_list = await self.file_repo.get_files(user_id, limit, offset, sort_by, order)
+        total_count = await self.file_repo.get_files_count(user_id)
         return file_list, total_count
 
-    async def download_file(self, file_id: int) -> tuple[bytes, str] | None:
-        file = await self.file_repo.get_file_by_id(file_id)
+    async def download_file(self, user_id: int, file_id: int) -> tuple[bytes, str] | None:
+        file = await self.file_repo.get_file_by_id(file_id, user_id)
         if not file:
             return None
 
@@ -41,14 +46,14 @@ class FileService:
         file_data = await self.storage_service.download_file(storage_path)
         return file_data, file.filename
 
-    async def update_filename(self, file_id: int, new_filename: str) -> File | None:
-        return await self.file_repo.update_filename(file_id, new_filename)
+    async def update_filename(self, user_id: int, file_id: int, new_filename: str) -> File | None:
+        return await self.file_repo.update_filename(file_id, new_filename, user_id)
 
-    async def delete_file(self, file_id: int) -> bool:
-        file = await self.file_repo.get_file_by_id(file_id)
+    async def delete_file(self, user_id: int, file_id: int) -> bool:
+        file = await self.file_repo.get_file_by_id(file_id, user_id)
         if not file:
             return False
 
         storage_path = file.url.split("/")[-1]
         await self.storage_service.delete_file(storage_path)
-        return await self.file_repo.delete_file(file_id)
+        return await self.file_repo.delete_file(file_id, user_id)
