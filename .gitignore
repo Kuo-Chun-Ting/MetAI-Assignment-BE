@@ -8,7 +8,7 @@ GEMINI.md
 
 # Environment files
 .env
-.env.local
+.env.*
 
 # Python
 __pycache__/
