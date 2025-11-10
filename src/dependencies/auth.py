@@ -1,9 +1,11 @@
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.dependencies.service import get_auth_service
 from src.repository.model.user import User
 from src.service.auth_service import AuthService
+from src.service.error import UnauthorizedError
+
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -13,13 +15,10 @@ async def get_current_user(
     service: AuthService = Depends(get_auth_service),
 ) -> User:
     if not credentials:
-        raise HTTPException(status_code=401, detail="Missing bearer token")
+        raise UnauthorizedError("Missing bearer token")
 
     if credentials.scheme.lower() != "bearer":
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
+        raise UnauthorizedError("Invalid authorization header, scheme is not 'bearer'")
 
     token = credentials.credentials
-    try:
-        return await service.get_user_from_token(token)
-    except ValueError as exc:
-        raise HTTPException(status_code=401, detail=str(exc))
+    return await service.get_user_from_token(token)

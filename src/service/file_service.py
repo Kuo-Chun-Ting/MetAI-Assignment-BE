@@ -1,8 +1,10 @@
+import base64
 import uuid
 
 from src.config import MAX_FILE_SIZE_MB
 from src.repository.file_repository import FileRepository
 from src.repository.model.file import File
+from src.service.error import BadRequestError, NotFoundError
 from src.service.supabase_storage_service import SupabaseStorageService
 
 
@@ -16,14 +18,21 @@ class FileService:
         max_size_bytes = MAX_FILE_SIZE_MB * 1024 * 1024
 
         if file_size > max_size_bytes:
-            raise ValueError(f"File size exceeds maximum allowed size of {MAX_FILE_SIZE_MB}MB")
+            raise BadRequestError(f"File size exceeds maximum allowed size of {MAX_FILE_SIZE_MB}MB")
 
-        unique_filename = f"{uuid.uuid4()}_{filename}"
+        # Encode filename to Base64 to ensure it's ASCII-safe for Supabase Storage key
+        filename_bytes = filename.encode("utf-8")
+        safe_filename_b64 = base64.urlsafe_b64encode(filename_bytes).decode("ascii")
+
+        unique_filename = f"{uuid.uuid4()}_{safe_filename_b64}"
         url = await self.storage_service.upload_file(unique_filename, file_data)
         return await self.file_repo.create_file(user_id, filename, url, file_size)
 
-    async def get_file(self, user_id: int, file_id: int) -> File | None:
-        return await self.file_repo.get_file_by_id(file_id, user_id)
+    async def get_file(self, user_id: int, file_id: int) -> File:
+        file = await self.file_repo.get_file_by_id(file_id, user_id)
+        if not file:
+            raise NotFoundError("File not found")
+        return file
 
     async def get_files(
         self,
@@ -37,23 +46,26 @@ class FileService:
         total_count = await self.file_repo.get_files_count(user_id)
         return file_list, total_count
 
-    async def download_file(self, user_id: int, file_id: int) -> tuple[bytes, str] | None:
+    async def download_file(self, user_id: int, file_id: int) -> tuple[bytes, str]:
         file = await self.file_repo.get_file_by_id(file_id, user_id)
         if not file:
-            return None
+            raise NotFoundError("File not found")
 
         storage_path = file.url.split("/")[-1]
         file_data = await self.storage_service.download_file(storage_path)
         return file_data, file.filename
 
-    async def update_filename(self, user_id: int, file_id: int, new_filename: str) -> File | None:
-        return await self.file_repo.update_filename(file_id, new_filename, user_id)
-
-    async def delete_file(self, user_id: int, file_id: int) -> bool:
+    async def update_filename(self, user_id: int, file_id: int, new_filename: str) -> File:
         file = await self.file_repo.get_file_by_id(file_id, user_id)
         if not file:
-            return False
+            raise NotFoundError("File not found")
+        return await self.file_repo.update_filename(file_id, new_filename, user_id)
+
+    async def delete_file(self, user_id: int, file_id: int) -> None:
+        file = await self.file_repo.get_file_by_id(file_id, user_id)
+        if not file:
+            raise NotFoundError("File not found")
 
         storage_path = file.url.split("/")[-1]
         await self.storage_service.delete_file(storage_path)
-        return await self.file_repo.delete_file(file_id, user_id)
+        await self.file_repo.delete_file(file_id, user_id)

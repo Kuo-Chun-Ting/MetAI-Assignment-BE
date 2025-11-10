@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import StreamingResponse
 
 from src.dependencies.auth import get_current_user
@@ -47,8 +47,6 @@ async def get_file(
     service: FileService = Depends(get_file_service),
 ) -> FileResponse:
     file = await service.get_file(current_user.id, file_id)
-    if not file:
-        raise HTTPException(status_code=404, detail="File not found")
     return FileResponse.model_validate(file)
 
 
@@ -58,11 +56,7 @@ async def download_file(
     current_user: User = Depends(get_current_user),
     service: FileService = Depends(get_file_service),
 ):
-    result = await service.download_file(current_user.id, file_id)
-    if not result:
-        raise HTTPException(status_code=404, detail="File not found")
-
-    file_data, filename = result
+    file_data, filename = await service.download_file(current_user.id, file_id)
     return StreamingResponse(
         iter([file_data]),
         media_type="application/octet-stream",
@@ -78,8 +72,6 @@ async def update_filename(
     service: FileService = Depends(get_file_service),
 ) -> FileResponse:
     file = await service.update_filename(current_user.id, file_id, request.filename)
-    if not file:
-        raise HTTPException(status_code=404, detail="File not found")
     return FileResponse.model_validate(file)
 
 
@@ -89,7 +81,5 @@ async def delete_file(
     current_user: User = Depends(get_current_user),
     service: FileService = Depends(get_file_service),
 ):
-    success = await service.delete_file(current_user.id, file_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="File not found")
+    await service.delete_file(current_user.id, file_id)
     return {"message": "File deleted successfully"}

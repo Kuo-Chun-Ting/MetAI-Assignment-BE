@@ -6,6 +6,7 @@ import jwt
 from src.config import JWT_ALGORITHM, JWT_SECRET_KEY
 from src.repository.model.user import User
 from src.repository.user_repository import UserRepository
+from src.service.error import ConflictError, UnauthorizedError
 
 
 class AuthService:
@@ -16,7 +17,7 @@ class AuthService:
 
     async def register(self, username: str, password: str) -> User:
         if await self.user_repo.username_exists(username):
-            raise ValueError("Username already exists")
+            raise ConflictError("User with this username already exists")
 
         password_hash = self._hash_password(password)
         return await self.user_repo.create_user(username, password_hash)
@@ -24,10 +25,10 @@ class AuthService:
     async def verify_credentials(self, username: str, password: str) -> User:
         user = await self.user_repo.get_user_by_username(username)
         if not user:
-            raise ValueError("Invalid username or password")
+            raise UnauthorizedError("Incorrect username or password")
 
         if not self._verify_password(password, user.password_hash):
-            raise ValueError("Invalid username or password")
+            raise UnauthorizedError("Incorrect username or password")
 
         return user
 
@@ -39,16 +40,17 @@ class AuthService:
 
     async def get_user_from_token(self, token: str) -> User:
         payload = self._decode_token(token)
+
         user_id = payload.get("sub")
         if not user_id:
-            raise ValueError("Invalid token payload")
+            raise UnauthorizedError("Invalid token payload")
 
         user = await self.user_repo.get_user_by_id(int(user_id))
         if not user:
-            raise ValueError("Invalid token payload")
+            raise UnauthorizedError("Invalid token payload")
 
         if not self._is_token_active(user.id, token):
-            raise ValueError("Token inactive")
+            raise UnauthorizedError("Token is inactive or has been logged out")
 
         return user
 
@@ -80,4 +82,4 @@ class AuthService:
         try:
             return jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
         except jwt.InvalidTokenError as exc:
-            raise ValueError("Invalid token") from exc
+            raise UnauthorizedError("Invalid or expired token") from exc
