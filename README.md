@@ -85,6 +85,7 @@
 - Thumbnails are kept simple (check extension only); upload a PNG or JPG to see it working.
 
 # Trade-offs or Known Limitations
+- Backend is on Render's free plan. It sleeps after 15 minutes of inactivity. Expect a 'cold start' delay of 30-60 seconds for the first request.
 - JWT never expire and valid tokens are cached only in memory, so restarting the backend forces everyone to log in again.
 - Upload/download progress only covers browser → API transfer; in the live Render environment I can reliably handle up to ~40 MB before the request times out.
 - Storage bucket is public and accessed via the anon key; anyone with the URL can read the file.

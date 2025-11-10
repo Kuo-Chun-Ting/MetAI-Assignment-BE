@@ -25,10 +25,10 @@ class AuthService:
     async def verify_credentials(self, username: str, password: str) -> User:
         user = await self.user_repo.get_user_by_username(username)
         if not user:
-            raise UnauthorizedError("Incorrect username or password")
+            raise UnauthorizedError("User not found")
 
         if not self._verify_password(password, user.password_hash):
-            raise UnauthorizedError("Incorrect username or password")
+            raise UnauthorizedError("Incorrect password")
 
         return user
 
