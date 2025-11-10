@@ -95,5 +95,6 @@
 - Implement proper session lifecycle: token expiry + refresh + a persistent cache so backend restarts don’t force everyone to log in again.
 - Strengthen data access: use a private Supabase bucket, service-role key, and RLS/JWT-based policies instead of public/anon access.
 - Improve uploads/downloads: chunk uploads plus backend progress updates (WebSocket or polling) so FE sees Supabase write progress.
+- Improve error handling: normalize BE exceptions into the correct HTTP status codes, and let the FE show clear error messages instead of a generic failure screen.
 - Add automated coverage (unit tests, API tests, end-to-end tests).
 - Prepare a separate Supabase project/credentials for testing so others can run the app without touching the main data.
